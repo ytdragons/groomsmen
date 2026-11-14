@@ -38,8 +38,9 @@ body{background:var(--paper);color:var(--ink);font-family:var(--caps);overflow:h
   padding:24px max(28px,env(safe-area-inset-right,0px)) 24px max(28px,env(safe-area-inset-left,0px));z-index:20;transition:opacity .7s ease}
 .scene.off{opacity:0;pointer-events:none}
 .veil{background:radial-gradient(closest-side,rgba(243,241,236,.96),rgba(243,241,236,.82) 60%,rgba(243,241,236,0))}
-.intro-card{display:flex;flex-direction:column;align-items:center;gap:16px;background:var(--paper);padding:30px 26px 28px;max-width:min(100%,520px);
-  border:1px solid var(--rule);outline:1px solid var(--rule);outline-offset:-8px;box-shadow:0 18px 50px rgba(23,37,30,.3)}
+.intro-card{display:flex;flex-direction:column;align-items:center;gap:18px;padding:56px 44px;max-width:min(100%,560px);
+  background:radial-gradient(closest-side,rgba(243,241,236,.97) 55%,rgba(243,241,236,.85) 75%,rgba(243,241,236,0));
+  text-shadow:0 0 3px var(--paper),0 0 14px var(--paper),0 0 28px var(--paper)}
 .date{font-size:.95rem;letter-spacing:.42em;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:14px}
 .date::before,.date::after{content:"";width:44px;height:1px;background:var(--rule)}
 h1{font-weight:500;font-size:clamp(2.6rem,12vw,5.5rem);letter-spacing:.28em;margin:0 0 0 .28em;line-height:1;text-wrap:balance}
@@ -72,7 +73,6 @@ h1{font-weight:500;font-size:clamp(2.6rem,12vw,5.5rem);letter-spacing:.28em;marg
 
 <section class="scene" id="intro">
   <div class="intro-card">
-  <div class="date">13 · 05 · 2027</div>
   <h1>Matty</h1>
   <p class="lede">Before we get into lunch, I have a question. But first&hellip; a little trip down memory lane.</p>
   <button class="btn" id="go" disabled>Loading photos&hellip;</button>
