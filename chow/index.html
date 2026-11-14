@@ -1,0 +1,200 @@
+<title>Chow, A Question</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Pinyon+Script&display=swap">
+<style>
+/* Layout: one full-screen stage, like the card itself — a framed sheet of paper where polaroids pile up, then the question. */
+:root{
+  --paper:#F3F1EC; --paper-2:#EAE7E0; --ink:#17251E; --ink-soft:#5B655F;
+  --rule:#8C918D; --gold:#B8965A; --photo-frame:#FFFFFF;
+  --caps:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --script:"Pinyon Script","Snell Roundhand","Apple Chancery",cursive;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--caps);overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.frame{position:fixed;inset:max(10px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));
+  border:1px solid var(--rule);pointer-events:none;z-index:50}
+.frame::after{content:"";position:absolute;inset:6px;border:1px solid var(--rule);opacity:.6}
+#stage{position:fixed;inset:0;overflow:hidden}
+.pol{position:absolute;left:0;top:0;width:var(--w);background:var(--photo-frame);padding:7px 7px 26px;
+  box-shadow:0 1px 2px rgba(23,37,30,.12),0 8px 24px rgba(23,37,30,.16);border-radius:2px;
+  transition:transform 1.3s cubic-bezier(.2,.8,.2,1),opacity .8s ease;touch-action:none;user-select:none;-webkit-user-select:none}
+.pol img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;object-position:50% 35%;background:var(--paper-2);pointer-events:none}
+.pol.drift{animation:drift var(--d) ease-in-out infinite alternate}
+.pol.dragging{transition:none;cursor:grabbing;box-shadow:0 2px 4px rgba(23,37,30,.15),0 18px 40px rgba(23,37,30,.25)}
+.pol.live{cursor:grab}
+@keyframes drift{to{translate:var(--dx) var(--dy);rotate:var(--dr)}}
+.scene{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;
+  padding:24px max(28px,env(safe-area-inset-right,0px)) 24px max(28px,env(safe-area-inset-left,0px));z-index:20;transition:opacity .7s ease}
+.scene.off{opacity:0;pointer-events:none}
+.veil{background:radial-gradient(closest-side,rgba(243,241,236,.96),rgba(243,241,236,.82) 60%,rgba(243,241,236,0))}
+.date{font-size:.95rem;letter-spacing:.42em;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:14px}
+.date::before,.date::after{content:"";width:44px;height:1px;background:var(--rule)}
+h1{font-weight:500;font-size:clamp(3rem,13vw,6.5rem);letter-spacing:.28em;margin:0 0 0 .28em;line-height:1;text-wrap:balance}
+.lede{font-size:clamp(1.25rem,4.5vw,1.6rem);font-style:italic;color:var(--ink-soft);margin:0;max-width:28ch;text-wrap:balance}
+.btn{font-family:var(--caps);font-size:1rem;letter-spacing:.3em;text-transform:uppercase;padding:14px 26px 13px 30px;
+  background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:999px;cursor:pointer;transition:transform .2s ease,background .2s ease}
+.btn:hover{transform:translateY(-2px)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+#pileUi{justify-content:flex-end;padding-bottom:max(40px,calc(env(safe-area-inset-bottom,0px) + 32px));pointer-events:none}
+#pileUi>*{pointer-events:auto}
+#pileUi .hint{font-size:1.15rem;font-style:italic;color:var(--ink-soft);margin:0;background:rgba(243,241,236,.9);padding:4px 12px;border-radius:999px}
+.ask-small{font-size:clamp(1rem,3.6vw,1.25rem);letter-spacing:.38em;text-transform:uppercase;margin:0}
+.ask-script{font-family:var(--script);font-weight:400;font-size:clamp(4rem,17vw,8rem);line-height:1.05;margin:-4px 0 6px;letter-spacing:0}
+.answers{position:relative;display:flex;gap:16px;justify-content:center;align-items:center;min-height:60px;width:min(100%,420px)}
+#no{position:relative;transition:transform .25s cubic-bezier(.3,1.4,.5,1)}
+#done img{width:min(78vw,380px,calc((100dvh - 230px) * .68));height:auto;box-shadow:0 2px 6px rgba(23,37,30,.15),0 24px 60px rgba(23,37,30,.22);
+  transform:rotate(-2deg) scale(.6);opacity:0;transition:transform 1.1s cubic-bezier(.2,1.3,.3,1),opacity .6s ease}
+#done.show img{transform:rotate(-2deg) scale(1);opacity:1}
+#done p{margin:0;font-size:clamp(1.2rem,4.2vw,1.5rem);font-style:italic;font-weight:500;color:var(--ink);max-width:30ch;background:var(--paper);padding:8px 20px;border:1px solid var(--rule);box-shadow:0 8px 24px rgba(23,37,30,.18)}
+#done .replay{background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:11px 22px 10px 26px;font-family:var(--caps);letter-spacing:.3em;text-transform:uppercase;font-size:.85rem;cursor:pointer;box-shadow:0 8px 24px rgba(23,37,30,.18)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+@media (prefers-reduced-motion:reduce){.pol,.scene,#done img{transition-duration:.01s}.pol.drift{animation:none}}
+</style>
+
+<div id="stage" aria-hidden="true"></div>
+<canvas id="confetti"></canvas>
+<div class="frame"></div>
+
+<section class="scene veil" id="intro">
+  <div class="date">13 · 05 · 2027</div>
+  <h1>Chow</h1>
+  <p class="lede">Before we get into lunch, I have a question. But first&hellip; a little trip down memory lane.</p>
+  <button class="btn" id="go" disabled>Loading photos&hellip;</button>
+</section>
+
+<section class="scene off" id="pileUi">
+  <p class="hint">Drag them around to look through.</p>
+  <button class="btn" id="toQ">Alright&hellip; now the question</button>
+</section>
+
+<section class="scene veil off" id="question">
+  <p class="ask-small">Will you be my</p>
+  <h2 class="ask-script">Groomsman?</h2>
+  <div class="answers">
+    <button class="btn" id="yes">Yes</button>
+    <button class="btn ghost" id="no">No</button>
+  </div>
+</section>
+
+<section class="scene off" id="done">
+  <img src="card.jpg" alt="Will you be my Groomsman card for Chow, 13 May 2027">
+  <p>Knew you'd say yes. Lock in 13 May 2027.</p>
+  <button class="replay" id="replay">Play it again</button>
+</section>
+
+<script>
+const N=11;
+const stage=document.getElementById('stage');
+const $=id=>document.getElementById(id);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+let W=innerWidth,H=innerHeight,zTop=1;
+const size=()=>Math.round(Math.min(W*.36,H*.26,230));
+const pols=[];
+for(let i=0;i<N;i++){
+  const d=document.createElement('div');d.className='pol drift';
+  d.innerHTML=`<img src="p/${String(i).padStart(2,'0')}.jpg" alt="">`;
+  stage.appendChild(d);pols.push(d);
+}
+function scatter(){
+  W=innerWidth;H=innerHeight;const s=size();
+  pols.forEach((d,i)=>{
+    d.style.setProperty('--w',s+'px');
+    d.style.setProperty('--d',rnd(6,11)+'s');
+    d.style.setProperty('--dx',rnd(-30,30)+'px');d.style.setProperty('--dy',rnd(-30,30)+'px');d.style.setProperty('--dr',rnd(-6,6)+'deg');
+    const x=rnd(-s*.3,W-s*.7),y=rnd(-s*.3,H-s*.8);
+    d._x=x;d._y=y;d._r=rnd(-20,20);
+    d.style.transform=`translate(${x}px,${y}px) rotate(${d._r}deg)`;
+    d.style.opacity=1;d.style.zIndex=i;
+  });
+}
+scatter();
+// wait until every photo is downloaded and decoded so the first run looks like the replay
+Promise.all(pols.map(d=>{const im=d.querySelector('img');return (im.complete?Promise.resolve():new Promise(r=>{im.onload=im.onerror=r})).then(()=>im.decode?im.decode().catch(()=>{}):0)}))
+  .then(()=>{const g=$('go');g.disabled=false;g.textContent='Show me'});
+function pile(){
+  const s=size();
+  // feature photo (index 0) lands last, biggest, on top
+  const order=pols.slice(1).concat(pols[0]);
+  // lift every photo off the top of the screen first, so each one drops onto the pile on top of the last
+  zTop=N+10;
+  pols.forEach(d=>{d.classList.remove('drift');d.style.transition='none';
+    d.style.transform=`translate(${rnd(0,W-s)}px,${-s*2.2}px) rotate(${rnd(-30,30)}deg) scale(1.3)`;});
+  void stage.offsetWidth;
+  pols.forEach(d=>d.style.transition='');
+  order.forEach((d,k)=>{
+    setTimeout(()=>{
+      d.classList.remove('drift');d.classList.add('live');
+      const feat=d===pols[0],sc=feat?1.55:1;
+      const spreadX=Math.min(W*.32,260),spreadY=Math.min(H*.22,200);
+      const x=feat?W/2-s/2:rnd(14,W-s-14);
+      const y=feat?H*.42-s/2:rnd(14,H-s*1.15-14);
+      d._x=x;d._y=y;d._r=feat?-3:rnd(-16,16);d._s=sc;
+      d.style.zIndex=++zTop;d.style.opacity=1;
+      d.style.transform=`translate(${x}px,${y}px) rotate(${d._r}deg) scale(${sc})`;
+    },k*420);
+  });
+  setTimeout(()=>$('pileUi').classList.remove('off'),order.length*420+1100);
+}
+// dragging
+pols.forEach(d=>{
+  d.addEventListener('pointerdown',e=>{
+    if(!d.classList.contains('live'))return;
+    d.setPointerCapture(e.pointerId);d.classList.add('dragging');d.style.zIndex=++zTop;
+    const sx=e.clientX-d._x,sy=e.clientY-d._y;
+    const move=ev=>{d._x=ev.clientX-sx;d._y=ev.clientY-sy;d.style.transform=`translate(${d._x}px,${d._y}px) rotate(${d._r}deg) scale(${d._s||1})`};
+    const up=()=>{d.classList.remove('dragging');d.removeEventListener('pointermove',move);d.removeEventListener('pointerup',up);d.removeEventListener('pointercancel',up)};
+    d.addEventListener('pointermove',move);d.addEventListener('pointerup',up);d.addEventListener('pointercancel',up);
+  });
+});
+$('go').onclick=()=>{$('intro').classList.add('off');pile()};
+$('toQ').onclick=()=>{
+  $('pileUi').classList.add('off');
+  pols.forEach(d=>{d.classList.remove('live');
+    const s=size(),edge=Math.random()<.5;
+    d._x=edge?(Math.random()<.5?rnd(-s*.6,W*.12):rnd(W*.75,W-s*.3)):rnd(-s*.4,W-s*.6);
+    d._y=edge?rnd(-s*.3,H-s*.7):(Math.random()<.5?rnd(-s*.6,H*.1):rnd(H*.78,H-s*.4));
+    d.style.transform=`translate(${d._x}px,${d._y}px) rotate(${rnd(-25,25)}deg) scale(1)`;});
+  setTimeout(()=>$('question').classList.remove('off'),500);
+};
+// the No button refuses to be pressed
+const noLines=['No','You sure?','Think again','Nice try','Not an option','Yes'];
+let dodges=0;
+function dodge(e){
+  e&&e.preventDefault();
+  dodges++;const no=$('no');
+  if(dodges>=noLines.length-1){no.textContent='Yes';no.classList.remove('ghost');no.style.transform='none';no.onclick=yes;return}
+  no.textContent=noLines[dodges];
+  const bx=Math.min(W*.38,170),by=Math.min(H*.18,110);
+  no.style.transform=`translate(${rnd(-bx,bx)}px,${rnd(-by,by)}px) scale(${1-dodges*.1})`;
+}
+$('no').addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')dodge()});
+$('no').addEventListener('click',e=>{if($('no').textContent!=='Yes')dodge(e)});
+function yes(){
+  $('question').classList.add('off');
+  
+  const done=$('done');done.classList.remove('off');requestAnimationFrame(()=>done.classList.add('show'));
+  confetti();
+}
+$('yes').onclick=yes;
+$('replay').onclick=()=>{
+  $('done').classList.remove('show');$('done').classList.add('off');
+  dodges=0;$('no').textContent='No';$('no').classList.add('ghost');$('no').style.transform='none';$('no').onclick=null;
+  pols.forEach(d=>d.classList.add('drift'));scatter();$('intro').classList.remove('off');
+};
+// confetti
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const c=$('confetti'),x=c.getContext('2d');c.width=W*devicePixelRatio;c.height=H*devicePixelRatio;x.scale(devicePixelRatio,devicePixelRatio);
+  const cols=['#B8965A','#17251E','#FFFFFF','#D9C49A','#5B655F'];
+  const ps=Array.from({length:180},()=>({x:W/2+rnd(-60,60),y:H*.45,vx:rnd(-9,9),vy:rnd(-16,-4),r:rnd(4,9),a:rnd(0,6),va:rnd(-.3,.3),c:cols[Math.floor(Math.random()*cols.length)]}));
+  let t=0;(function f(){x.clearRect(0,0,W,H);t++;
+    ps.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(t<240)requestAnimationFrame(f);else x.clearRect(0,0,W,H)})();
+}
+addEventListener('resize',()=>{if(!$('intro').classList.contains('off'))scatter();else{W=innerWidth;H=innerHeight}});
+</script>
